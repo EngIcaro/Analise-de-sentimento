@@ -15,21 +15,19 @@ from keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.model_selection import train_test_split
-
+import string
 from sklearn.svm import SVC
 #from xgboost import XGBClassifier
 #from skmultilearn.problem_transform import BinaryRelevance
 from sklearn.metrics import accuracy_score
 
-from sklearn.linear_model import LogisticRegression  # for Logistic Regression algorithm
-from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier  # for K nearest neighbours
-from sklearn import svm  #for Support Vector Machine (SVM) Algorithm
+from sklearn.neighbors import KNeighborsClassifier  
 from sklearn import metrics #for checking the model accuracy
 from sklearn.tree import DecisionTreeClassifier #for using Decision Tree Algoithm
 from sklearn import tree
 from sklearn.metrics import plot_confusion_matrix
 import pickle
+from nltk.stem import WordNetLemmatizer
 #%% Lendo a base de dados 
 data_base = pd.read_csv('./input/database.csv', sep=',', encoding = "ISO-8859-1")
 #%% Explorar a base de dados
@@ -51,6 +49,7 @@ def clean_text(text):
     #text = text.encode('ascii', errors = 'ignore').decode() #Decodificando caracteres em ASCII
     text = text.lower() #Apenas caracteres minúsculos
     text = text.strip(' ') #Removendo espaços do começo e fim   
+    text = text.translate(str.maketrans('', '', string.punctuation))
     #text = re.sub("[^A-Za-z0-9]+", ' ',text)
     return text
 tqdm.pandas(desc='Limpando o texto')
@@ -70,7 +69,16 @@ def remove_stopwords(text):
 
 tqdm.pandas(desc='Removendo as stopwords e tokenizando o texto')
 data_base['text_tokens'] = data_base['text_tokens'].progress_apply(remove_stopwords)
+#%%
 
+def lemmatizer_words(text):
+    porter = nltk.PorterStemmer()
+    lemma_text = [porter.stem(t) for t in text]
+    #lemmatizer = WordNetLemmatizer() 
+    #lemma_text = lemmatizer.lemmatize(text)
+    return lemma_text
+tqdm.pandas(desc='Removendo as stopwords e tokenizando o texto')
+data_base['text_tokens'] = data_base['text_tokens'].progress_apply(lemmatizer_words)
 #%%
 text_tokens = []
  
@@ -83,11 +91,14 @@ print(num_words)
 #%%
 tok = Tokenizer(num_words=num_words)
 tok.fit_on_texts(data_base['text_tokens'].values)
-
+# saving
+with open('./output/tokenizer.pickle', 'wb') as handle:
+    pickle.dump(tok, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
 data_base['X'] = tok.texts_to_sequences(data_base['text_tokens'])
 #%%
 data_base['num_words'] = data_base['text_tokens'].apply(lambda x : len(x))
- 
+
 max_num_words = data_base['num_words'].max()
 #%%
 labels = data_base.iloc[:,1:4].columns.values
@@ -113,13 +124,12 @@ tree.plot_tree(model, filled=True)
 prediction=model.predict(X_test)
 print('The accuracy of the ID3 Regression is',metrics.accuracy_score(prediction,y_test))
 #%%
-model = KNeighborsClassifier(n_neighbors=2) #select the algorithm
-model.fit(X_train,y_train) # we train the algorithm with the training data and the training output
-prediction=model.predict(X_test) #now we pass the testing data to the trained algorithm
-print('The accuracy of the KNN is:',metrics.accuracy_score(prediction,y_test))#now we check the accuracy of the algorithm. 
-#we pass the predicted output by the model and the actual output
+model = KNeighborsClassifier(n_neighbors=2) 
+model.fit(X_train,y_train) 
+prediction=model.predict(X_test) 
+print('The accuracy of the KNN is:',metrics.accuracy_score(prediction,y_test))
 #%%
-# Treinando modelo com toda a base
+# Treinando o modelo com toda a base
 model = DecisionTreeClassifier()
 model.fit(X,y)
 #%%
