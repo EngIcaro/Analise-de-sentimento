@@ -13,7 +13,23 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize 
 from keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.model_selection import train_test_split
 
+from sklearn.svm import SVC
+#from xgboost import XGBClassifier
+#from skmultilearn.problem_transform import BinaryRelevance
+from sklearn.metrics import accuracy_score
+
+from sklearn.linear_model import LogisticRegression  # for Logistic Regression algorithm
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier  # for K nearest neighbours
+from sklearn import svm  #for Support Vector Machine (SVM) Algorithm
+from sklearn import metrics #for checking the model accuracy
+from sklearn.tree import DecisionTreeClassifier #for using Decision Tree Algoithm
+from sklearn import tree
+from sklearn.metrics import plot_confusion_matrix
+import pickle
 #%% Lendo a base de dados 
 data_base = pd.read_csv('./input/database.csv', sep=',', encoding = "ISO-8859-1")
 #%% Explorar a base de dados
@@ -81,7 +97,37 @@ y = data_base[labels].values
 print('Dimensão do X: {}'.format(X.shape))
 print('Dimensão do y: {}'.format(y.shape))
 #%% pré-processamento
-# Tokenization
-treinamento = data_base.iloc[:,0].values
-#print(treinamento[:])
-aux = word_tokenize(treinamento[:])
+# Teste com o train test split do Scikit-learn
+sss = StratifiedShuffleSplit(n_splits=1, test_size=0.3, random_state=0)
+aux1 = sss.split(X, y)
+for train_index, test_index in sss.split(X, y):
+    X_train, X_test = X[train_index], X[test_index]
+    y_train, y_test = y[train_index], y[test_index]
+    
+plt.hist(y_test)
+
+#%%
+model = DecisionTreeClassifier()
+model.fit(X_train,y_train)
+tree.plot_tree(model, filled=True)
+prediction=model.predict(X_test)
+print('The accuracy of the ID3 Regression is',metrics.accuracy_score(prediction,y_test))
+#%%
+model = KNeighborsClassifier(n_neighbors=2) #select the algorithm
+model.fit(X_train,y_train) # we train the algorithm with the training data and the training output
+prediction=model.predict(X_test) #now we pass the testing data to the trained algorithm
+print('The accuracy of the KNN is:',metrics.accuracy_score(prediction,y_test))#now we check the accuracy of the algorithm. 
+#we pass the predicted output by the model and the actual output
+#%%
+# Treinando modelo com toda a base
+model = DecisionTreeClassifier()
+model.fit(X,y)
+#%%
+pkl_filename = "./output/arvore.pkl"
+with open(pkl_filename, 'wb') as file:
+    pickle.dump(model, file)
+    
+#%%
+with open(pkl_filename, 'rb') as file:
+    pickle_model = pickle.load(file)
+prediction=pickle_model.predict(X_test)
