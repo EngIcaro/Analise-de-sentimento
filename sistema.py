@@ -1,3 +1,9 @@
+#%%
+# Autor: Ícaro Gabriel Paiva Bastos
+# Última modificação: 10/10/2020
+# Sobre: Este script tem o objetivo de ler a frase digitada pelo usuário e fazer a previsão do sentimento 
+
+#%% Importando algumas bibliotecas
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords 

@@ -1,8 +1,8 @@
 #%%
 # Autor: Ícaro Gabriel Paiva Bastos
-# Última modificação: 07/10/2020
-# nltk.download() 
-# nltk.download('punkt')
+# Última modificação: 10/10/2020
+# Sobre: Este script tem o objetivo de ler a base de dados, fazer o pré-processamento dos dados
+# e gerar os arquivos de traino e teste
 #%% Importando as bibliotecas
 import nltk
 import pandas as pd
@@ -17,7 +17,7 @@ import string
 import pickle
 
 #%% Declarando algumas funções
-# Função responsável por deixar todos os caracteres em minúsculo, remover espaços em braanco e pontuação, 
+# Função responsável por deixar todos os caracteres em minúsculo, remover espaços em branco e pontuação.
 def clean_text(text):
     
     text = text.lower() 
@@ -25,14 +25,14 @@ def clean_text(text):
     text = text.translate(str.maketrans('', '', string.punctuation))
     return text
 
-# Capturando as stopwords da língua portuguesa e retirando das frases
+# Capturando as stopwords da língua portuguesa e retirando das frases.
 def remove_stopwords(text):  
     stop_words = set(stopwords.words('portuguese')) 
     word_tokens = word_tokenize(text) 
     filtered_sentence = [w for w in word_tokens if not w in stop_words]     
     return filtered_sentence
 
-# Removendo o tempo gramatical
+# Removendo o tempo gramatical.
 def lemmatizer_words(text):
     porter = nltk.PorterStemmer()
     lemma_text = [porter.stem(t) for t in text]
@@ -41,7 +41,7 @@ def lemmatizer_words(text):
 #%% Lendo a base de dados 
 data_base = pd.read_csv('./input/database.csv', sep=',', encoding = "ISO-8859-1")
 
-#%% Explorar a base de dados
+#%% Explorando a base de dados
 data_base.info() 
 print(data_base.nunique())
 data_base['Sentimento'] = [x.replace('alegria', 'felicidade') for x in data_base['Sentimento']]
@@ -93,8 +93,7 @@ labels = data_base.iloc[:,1:4].columns.values
 X = pad_sequences(maxlen=max_num_words, sequences=data_base['X'], value=0, padding='post', truncating='post')
 y = data_base[labels].values
 
-#%% pré-processamento
-# Gerando os cojuntos de treino e teste com a mesma proporção de classes
+#%% Gerando os cojuntos de treino e teste com a mesma proporção de classes
 sss = StratifiedShuffleSplit(n_splits=1, test_size=0.3, random_state=0)
 aux1 = sss.split(X, y)
 for train_index, test_index in sss.split(X, y):
