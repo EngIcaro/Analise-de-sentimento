@@ -7,7 +7,7 @@ Repositório criado para resolver o desafio de desenvolver um serviço que seja 
 ### Exemplo
 Entrada:
 ```sh
-Não quero saber de nada, eu te odeia!
+Não quero saber de nada, eu te odeio!
 Sinto sua falta
 ```
 
