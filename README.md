@@ -13,6 +13,7 @@ Sinto sua falta
 
 Saída:
 ```sh
+raiva
 tristeza
 ```
 
